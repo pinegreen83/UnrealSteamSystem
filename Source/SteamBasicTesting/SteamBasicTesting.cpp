@@ -6,4 +6,3 @@
 IMPLEMENT_PRIMARY_GAME_MODULE( FDefaultGameModuleImpl, SteamBasicTesting, "SteamBasicTesting" );
 
 DEFINE_LOG_CATEGORY(LogSteamBasicTesting)
- 

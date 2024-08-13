@@ -3,6 +3,7 @@
 #include "SteamBasicTestingGameMode.h"
 #include "SteamBasicTestingPlayerController.h"
 #include "SteamBasicTestingCharacter.h"
+#include "GameFramework/GameUserSettings.h"
 #include "UObject/ConstructorHelpers.h"
 
 ASteamBasicTestingGameMode::ASteamBasicTestingGameMode()

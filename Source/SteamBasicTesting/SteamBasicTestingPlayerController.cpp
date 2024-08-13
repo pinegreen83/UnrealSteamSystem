@@ -10,7 +10,9 @@
 #include "EnhancedInputComponent.h"
 #include "InputActionValue.h"
 #include "EnhancedInputSubsystems.h"
+#include "OnlineSubsystemSteam.h"
 #include "Engine/LocalPlayer.h"
+#include "Kismet/GameplayStatics.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -20,6 +22,26 @@ ASteamBasicTestingPlayerController::ASteamBasicTestingPlayerController()
 	DefaultMouseCursor = EMouseCursor::Default;
 	CachedDestination = FVector::ZeroVector;
 	FollowTime = 0.f;
+	
+	// InputAction과 InputMappingContext를 로드
+	static ConstructorHelpers::FObjectFinder<UInputAction> IA_ExitGame_OBJ(TEXT("/Game/TopDown/Input/Actions/IA_ExitGame"));
+	if (IA_ExitGame_OBJ.Succeeded())
+	{
+		IA_ExitGame = IA_ExitGame_OBJ.Object;
+	}
+    
+	static ConstructorHelpers::FObjectFinder<UInputAction> IA_CreateGameSession_OBJ(TEXT("/Game/TopDown/Input/Actions/IA_CreateGameSession"));
+	if (IA_CreateGameSession_OBJ.Succeeded())
+	{
+		IA_CreateGameSession = IA_CreateGameSession_OBJ.Object;
+	}
+    
+	static ConstructorHelpers::FObjectFinder<UInputAction> IA_FindFriends_OBJ(TEXT("/Game/TopDown/Input/Actions/IA_FindFriends"));
+	if (IA_FindFriends_OBJ.Succeeded())
+	{
+		IA_FindFriends = IA_FindFriends_OBJ.Object;
+	}
+	
 }
 
 void ASteamBasicTestingPlayerController::BeginPlay()
@@ -53,7 +75,16 @@ void ASteamBasicTestingPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(SetDestinationTouchAction, ETriggerEvent::Triggered, this, &ASteamBasicTestingPlayerController::OnTouchTriggered);
 		EnhancedInputComponent->BindAction(SetDestinationTouchAction, ETriggerEvent::Completed, this, &ASteamBasicTestingPlayerController::OnTouchReleased);
 		EnhancedInputComponent->BindAction(SetDestinationTouchAction, ETriggerEvent::Canceled, this, &ASteamBasicTestingPlayerController::OnTouchReleased);
-	}
+	
+		// ESC 키 누를 시 게임 종료
+		EnhancedInputComponent->BindAction(IA_ExitGame, ETriggerEvent::Triggered, this, &ASteamBasicTestingPlayerController::ExitGame);
+		
+		// 1번 키 누를 시 세션 생성
+		EnhancedInputComponent->BindAction(IA_CreateGameSession, ETriggerEvent::Triggered, this, &ASteamBasicTestingPlayerController::CreateGameSession);
+		
+		// 2번 키 누를 시 친구 찾기
+		EnhancedInputComponent->BindAction(IA_FindFriends, ETriggerEvent::Triggered, this, &ASteamBasicTestingPlayerController::FindFriends);
+		}
 	else
 	{
 		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input Component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
@@ -123,3 +154,28 @@ void ASteamBasicTestingPlayerController::OnTouchReleased()
 	bIsTouch = false;
 	OnSetDestinationReleased();
 }
+
+void ASteamBasicTestingPlayerController::ExitGame()
+{
+	UGameplayStatics::SetGamePaused(GetWorld(), true);
+	ConsoleCommand("quit");
+}
+
+void ASteamBasicTestingPlayerController::CreateGameSession()
+{
+	ASteamBasicTestingCharacter* MyCharacter = Cast<ASteamBasicTestingCharacter>(GetCharacter());
+	if(MyCharacter)
+	{
+		MyCharacter->CreateGameSession();
+	}
+}
+
+void ASteamBasicTestingPlayerController::FindFriends()
+{
+	ASteamBasicTestingCharacter* MyCharacter = Cast<ASteamBasicTestingCharacter>(GetCharacter());
+	if(MyCharacter)
+	{
+		MyCharacter->GetFriendsList();
+	}
+}
+

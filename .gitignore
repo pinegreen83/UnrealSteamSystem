@@ -58,6 +58,7 @@ DerivedDataCache/*
 .idea
 .vsconfig
 .vs
+.DS_Store
 
 # ignore assets
 Content/**/*.uasset
