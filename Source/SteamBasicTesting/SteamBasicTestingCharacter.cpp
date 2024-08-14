@@ -4,7 +4,6 @@
 
 #include "OnlineSessionSettings.h"
 #include "OnlineSubsystem.h"
-#include "Interfaces/OnlineFriendsInterface.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Camera/CameraComponent.h"
 #include "Components/DecalComponent.h"
@@ -54,16 +53,15 @@ ASteamBasicTestingCharacter::ASteamBasicTestingCharacter():
 	if(OnlineSubsystem)
 	{
 		OnlineSessionInterface = OnlineSubsystem->GetSessionInterface();
-		FriendsInterface = OnlineSubsystem->GetFriendsInterface();
-		if(GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(
-				-1,
-				15.f,
-				FColor::Blue,
-				FString::Printf(TEXT("Found System %s"), *OnlineSubsystem->GetSubsystemName().ToString())
-			);
-		}
+		// if(GEngine)
+		// {
+		// 	GEngine->AddOnScreenDebugMessage(
+		// 		-1,
+		// 		15.f,
+		// 		FColor::Blue,
+		// 		FString::Printf(TEXT("Found System %s"), *OnlineSubsystem->GetSubsystemName().ToString())
+		// 	);
+		// }
 	}
 }
 
