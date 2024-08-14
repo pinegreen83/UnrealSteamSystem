@@ -1,0 +1,28 @@
+## 0. SteamMultiPlayerBasic 플러그인 생성
+- 기존에 캐릭터에서 테스트하던 스팀 세션 생성 및 친구 목록 확인 코드를 플러그인으로 옮기는 작업 시작
+
+## 1. SteamMultiplayerSubsystem.cpp
+- 세션 생성, 세션 탐색 및 세션 참가
+
+    - Delegate로 세션 생성, 탐색 및 참가의 성공 혹은 실패 시 콜백을 지정,
+    - Multicast Delegate를 통한 subsystem과 menu 사이의 통신 설정.
+    
+    함수 작성
+        - 세션 생성 함수(CreateSession)
+        - 세션 생성 완료 시 Delegate를 통해 호출되는 콜백함수(OnCreateSessionComplete)
+        - 세션 탐색 함수(FindSession)
+        - 세션 탐색 완료 시 Delegate를 통해 호출되는 콜백함수(OnFindSessionsComplete)
+        - 세션 참가 함수(JoinSession)
+        - 세션 참가 완료 시 Delegate를 통해 호출되는 콜백함수(OnJoinSessionComplete)
+
+## 2. SessionMenu.cpp
+- 세션에 대한 메뉴 UI로 해당 UI를 활용한 세션 생성, 탐색 및 참가 가능.
+
+    함수 작성
+        - 메뉴 UI 초기 설정(MenuSetup)
+        - SteamMultiplayerSubsystem.cpp에서 Multicast Delegate를 통해 세션 생성에 대해 호출받아 callback(OnCreateSession)
+        - SteamMultiplayerSubsystem.cpp에서 Multicast Delegate를 통해 세션 탐색에 대해 호출받아 callback(OnFindSessions)
+        - SteamMultiplayerSubsystem.cpp에서 Multicast Delegate를 통해 세션 참가에 대해 호출받아 callback(OnJoinSession)
+        - 세션 생성 버튼(HostButtonClicked)
+        - 세션 탐색 및 참가 버튼(JoinButtonClicked)
+        - 세션 탐색 및 참가 성공시 메뉴 UI 제거 함수(MenuTearDown)
