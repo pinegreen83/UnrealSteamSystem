@@ -83,4 +83,13 @@ private:
 	FDelegateHandle DestroySessionCompleteDelegateHandle;
 	FOnStartSessionCompleteDelegate StartSessionCompleteDelegate;
 	FDelegateHandle StartSessionCompleteDelegateHandle;
+
+	/**
+	 * 세션 생성 시 이미 존재하는 세션에 참가하려고 할 때 그 세션을 파괴하고 다시 만들 떄 필요한 변수
+	 * bCreateSessionOnDestroy : 이미 존재하는 세션을 생성하고 파괴하려는 것인지 확인
+	 * LastNumPublicConnections : 
+	 */
+	bool bCreateSessionOnDestroy{false};
+	int32 LastNumPublicConnections;
+	FString LastMatchType;
 };

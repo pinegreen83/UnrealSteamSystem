@@ -17,7 +17,7 @@ class STEAMMULTIPLAYERBASIC_API USessionMenu : public UUserWidget
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch);
+	void MenuSetup(int32 NumberOfPublicConnections = 4, FString TypeOfMatch = FString(TEXT("pinegreen")), FString LobbyPath = FString(TEXT("/Game/TopDown/Maps/TopDownMap")));
 
 protected:
 
@@ -62,7 +62,9 @@ private:
 	 * 세션 생성에 필요한 변수
 	 * NumPublicConnection : 세션에 들어올 수 있는 인원 수
 	 * MatchType : 세션 이름
+	 * PathToLobby : 로비로 사용할 레벨의 경로를 저장
 	 */
 	int32 NumPublicConnections{4};
-	FString MatchType{TEXT("SetMatchName")};
+	FString MatchType{TEXT("pinegreen")};
+	FString PathToLobby{TEXT("")};
 };

@@ -30,7 +30,11 @@ void USteamMultiplayerSubsystem::CreateSession(int32 NumPublicConnections, FStri
 	auto ExistingSession = SessionInterface->GetNamedSession(NAME_GameSession);
 	if(ExistingSession != nullptr)
 	{
-		SessionInterface->DestroySession(NAME_GameSession);
+		bCreateSessionOnDestroy = true;
+		LastNumPublicConnections = NumPublicConnections;
+		LastMatchType = MatchType;
+
+		DestroySession();
 	}
 
 	// delegate를 delegate handle에 저장해서 추후에 delegate list에서 삭제가 가능하도록 만듦.
@@ -102,6 +106,19 @@ void USteamMultiplayerSubsystem::JoinSession(const FOnlineSessionSearchResult& S
 
 void USteamMultiplayerSubsystem::DestroySession()
 {
+	if(!SessionInterface.IsValid())
+	{
+		SteamMultiplayerOnDestroySessionComplete.Broadcast(false);
+		return;
+	}
+
+	DestroySessionCompleteDelegateHandle = SessionInterface->AddOnDestroySessionCompleteDelegate_Handle(DestroySessionCompleteDelegate);
+
+	if(!SessionInterface->DestroySession(NAME_GameSession))
+	{
+		SessionInterface->ClearOnDestroySessionCompleteDelegate_Handle(DestroySessionCompleteDelegateHandle);
+		SteamMultiplayerOnDestroySessionComplete.Broadcast(false);
+	}
 }
 
 void USteamMultiplayerSubsystem::StartSession()
@@ -146,6 +163,16 @@ void USteamMultiplayerSubsystem::OnJoinSessionComplete(FName SessionName, EOnJoi
 
 auto USteamMultiplayerSubsystem::OnDestroySessionComplete(FName SessionName, bool bWasSuccessful) -> void
 {
+	if(SessionInterface)
+	{
+		SessionInterface->ClearOnDestroySessionCompleteDelegate_Handle(DestroySessionCompleteDelegateHandle);
+	}
+	if(bWasSuccessful && bCreateSessionOnDestroy)
+	{
+		bCreateSessionOnDestroy = false;
+		CreateSession(LastNumPublicConnections, LastMatchType);
+	}
+	SteamMultiplayerOnDestroySessionComplete.Broadcast(bWasSuccessful);
 }
 
 void USteamMultiplayerSubsystem::OnStartSessionComplete(FName SessionName, bool bWasSuccessful)

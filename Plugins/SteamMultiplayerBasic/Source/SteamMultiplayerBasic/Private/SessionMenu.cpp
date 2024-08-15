@@ -7,8 +7,9 @@
 #include "OnlineSessionSettings.h"
 #include "OnlineSubsystem.h"
 
-void USessionMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch)
+void USessionMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch, FString LobbyPath)
 {
+	PathToLobby = FString::Printf(TEXT("%s?listen"), *LobbyPath);
 	NumPublicConnections = NumberOfPublicConnections;
 	MatchType = TypeOfMatch;
 	AddToViewport();
@@ -66,6 +67,7 @@ bool USessionMenu::Initialize()
 
 void USessionMenu::NativeDestruct()
 {
+	MenuTearDown();
 	Super::NativeDestruct();
 }
 
@@ -73,20 +75,10 @@ void USessionMenu::OnCreateSession(bool bWasSuccessful)
 {
 	if(bWasSuccessful)
 	{
-		if(GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(
-				-1,
-				15.f,
-				FColor::Yellow,
-				FString(TEXT("Session Created Successfully"))
-				);
-		}
-		
 		UWorld* World = GetWorld();
 		if(World)
 		{
-			World->ServerTravel("/Game/TopDown/Maps/TopDownMap?Listen");
+			World->ServerTravel(PathToLobby);
 		}
 	}
 	else
@@ -100,6 +92,7 @@ void USessionMenu::OnCreateSession(bool bWasSuccessful)
 				FString(TEXT("Failed to create session"))
 				);
 		}
+		HostButton->SetIsEnabled(true);
 	}
 }
 
@@ -119,6 +112,10 @@ void USessionMenu::OnFindSessions(const TArray<FOnlineSessionSearchResult>& Sess
 			SteamMultiplayerSubsystem->JoinSession(Result);
 			return;
 		}
+	}
+	if(!bWasSuccessful || SessionResults.Num() == 0)
+	{
+		JoinButton->SetIsEnabled(true);
 	}
 }
 
@@ -140,6 +137,11 @@ void USessionMenu::OnJoinSession(EOnJoinSessionCompleteResult::Type Result)
 			}
 		}
 	}
+
+	if(Result != EOnJoinSessionCompleteResult::Success)
+	{
+		JoinButton->SetIsEnabled(true);
+	}
 }
 
 void USessionMenu::OnDestroySession(bool bWasSuccessful)
@@ -152,16 +154,7 @@ void USessionMenu::OnStartSession(bool bWasSuccessful)
 
 void USessionMenu::HostButtonClicked()
 {
-	if(GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(
-				-1,
-				15.f,
-				FColor::Yellow,
-				FString(TEXT("Host Button Clicked"))
-			);
-	}
-	
+	HostButton->SetIsEnabled(false);
 	if(SteamMultiplayerSubsystem)
 	{
 		SteamMultiplayerSubsystem->CreateSession(4, FString("pinegreen"));
@@ -170,16 +163,7 @@ void USessionMenu::HostButtonClicked()
 
 void USessionMenu::JoinButtonClicked()
 {
-	if(GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(
-			-1,
-			15.f,
-			FColor::Yellow,
-			FString(TEXT("Join Button Clicked"))
-			);
-	}
-
+	JoinButton->SetIsEnabled(false);
 	if(SteamMultiplayerSubsystem)
 	{
 		SteamMultiplayerSubsystem->FindSessions(10000);
@@ -195,9 +179,10 @@ void USessionMenu::MenuTearDown()
 		APlayerController* PlayerController = World->GetFirstPlayerController();
 		if(PlayerController)
 		{
-			FInputModeGameOnly InputModeData;
+			FInputModeGameAndUI InputModeData;
+			InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::LockInFullscreen);
 			PlayerController->SetInputMode(InputModeData);
-			// PlayerController->SetShowMouseCursor(false);
+			PlayerController->SetShowMouseCursor(true);
 		}
 	}
 }

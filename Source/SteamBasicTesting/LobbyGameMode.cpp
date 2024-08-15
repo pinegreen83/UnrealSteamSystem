@@ -2,13 +2,57 @@
 
 
 #include "LobbyGameMode.h"
+
+#include "EnhancedInputSubsystems.h"
 #include "GameFramework/GameStateBase.h"
 #include "GameFramework/PlayerState.h"
+#include "GameFramework/Character.h"
+#include "SteamBasicTestingPlayerController.h"
 
 void ALobbyGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
 
+	if(NewPlayer)
+	{
+		if(APawn* ExistingPawn = NewPlayer->GetPawn())
+		{
+			ExistingPawn->Destroy();
+		}
+
+		FVector SpawnLocation = FVector(1120.f,1320.f,92.f);
+		FRotator SpawnRotation = FRotator::ZeroRotator;
+
+		ACharacter* NewCharacter = GetWorld()->SpawnActor<ACharacter>(DefaultPawnClass, SpawnLocation, SpawnRotation);
+		if(NewCharacter)
+		{
+			NewPlayer->Possess(NewCharacter);
+
+			UE_LOG(LogTemp, Warning, TEXT("Character Name : %s"), *NewCharacter->GetName());
+			if(GEngine)
+			{
+				GEngine->AddOnScreenDebugMessage(
+					-1,
+					15.f,
+					FColor::Orange,
+					FString(TEXT("Create Character"))
+					);
+			}
+		}
+		else
+		{
+			if(GEngine)
+			{
+				GEngine->AddOnScreenDebugMessage(
+					-1,
+					15.f,
+					FColor::Orange,
+					FString(TEXT("Can't Create Character"))
+					);
+			}
+		}
+	}
+	
 	if(GameState)
 	{
 		int32 NumberOfPlayers = GameState.Get()->PlayerArray.Num();
@@ -17,22 +61,25 @@ void ALobbyGameMode::PostLogin(APlayerController* NewPlayer)
 		{
 			GEngine->AddOnScreenDebugMessage(
 				1,
-				60.f,
+				15.f,
 				FColor::Yellow,
-				FString(TEXT("Players in game : %d"), NumberOfPlayers)
+				FString::Printf(TEXT("Players in game : %d"), NumberOfPlayers)
 				);
+			UE_LOG(LogTemp, Warning, TEXT("Players in game"));
 
 			APlayerState* PlayerState = NewPlayer->GetPlayerState<APlayerState>();
 			if(PlayerState)
 			{
 				FString PlayerName = PlayerState->GetPlayerName();
 				GEngine->AddOnScreenDebugMessage(
-					-1,
-					60.f,
+					2,
+					15.f,
 					FColor::Cyan,
 					FString::Printf(TEXT("%s has joined the game"), *PlayerName)
 					);
 			}
+			
+			UE_LOG(LogTemp, Warning, TEXT("joined the game"));
 		}
 	}
 }
@@ -54,7 +101,7 @@ void ALobbyGameMode::Logout(AController* Exiting)
 
 		FString PlayerName = PlayerState->GetPlayerName();
 		GEngine->AddOnScreenDebugMessage(
-			-1,
+			2,
 			60.f,
 			FColor::Yellow,
 			FString::Printf(TEXT("%s has exited the game"), *PlayerName)
