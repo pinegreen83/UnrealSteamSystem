@@ -16,7 +16,7 @@ class STEAMMULTIPLAYERBASIC_API USessionMenu : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category="Session")
 	void MenuSetup(int32 NumberOfPublicConnections = 4, FString TypeOfMatch = FString(TEXT("pinegreen")), FString LobbyPath = FString(TEXT("/Game/TopDown/Maps/TopDownMap")));
 
 protected:

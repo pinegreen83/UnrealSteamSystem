@@ -83,15 +83,15 @@ void USessionMenu::OnCreateSession(bool bWasSuccessful)
 	}
 	else
 	{
-		if(GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(
-				-1,
-				15.f,
-				FColor::Yellow,
-				FString(TEXT("Failed to create session"))
-				);
-		}
+		// if(GEngine)
+		// {
+		// 	GEngine->AddOnScreenDebugMessage(
+		// 		-1,
+		// 		15.f,
+		// 		FColor::Yellow,
+		// 		FString(TEXT("Failed to create session"))
+		// 		);
+		// }
 		HostButton->SetIsEnabled(true);
 	}
 }
