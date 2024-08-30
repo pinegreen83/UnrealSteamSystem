@@ -74,4 +74,4 @@ Plugins/*/Intermediate/*
 DerivedDataCache/*
 
 # MacOs
-/.DS_Store
+.DS_Store

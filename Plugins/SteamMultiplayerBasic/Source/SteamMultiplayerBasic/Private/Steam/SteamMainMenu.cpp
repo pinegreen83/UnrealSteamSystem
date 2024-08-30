@@ -1,13 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "SessionMenu.h"
+#include "Steam/SteamMainMenu.h"
 #include "Components/Button.h"
 #include "SteamMultiplayerSubsystem.h"
 #include "OnlineSessionSettings.h"
 #include "OnlineSubsystem.h"
 
-void USessionMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch, FString LobbyPath)
+void USteamMainMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch, FString LobbyPath)
 {
 	PathToLobby = FString::Printf(TEXT("%s?listen"), *LobbyPath);
 	NumPublicConnections = NumberOfPublicConnections;
@@ -46,7 +46,7 @@ void USessionMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatc
 	}
 }
 
-bool USessionMenu::Initialize()
+bool USteamMainMenu::Initialize()
 {
 	if(!Super::Initialize())
 	{
@@ -65,13 +65,13 @@ bool USessionMenu::Initialize()
 	return true;
 }
 
-void USessionMenu::NativeDestruct()
+void USteamMainMenu::NativeDestruct()
 {
 	MenuTearDown();
 	Super::NativeDestruct();
 }
 
-void USessionMenu::OnCreateSession(bool bWasSuccessful)
+void USteamMainMenu::OnCreateSession(bool bWasSuccessful)
 {
 	if(bWasSuccessful)
 	{
@@ -96,7 +96,7 @@ void USessionMenu::OnCreateSession(bool bWasSuccessful)
 	}
 }
 
-void USessionMenu::OnFindSessions(const TArray<FOnlineSessionSearchResult>& SessionResults, bool bWasSuccessful)
+void USteamMainMenu::OnFindSessions(const TArray<FOnlineSessionSearchResult>& SessionResults, bool bWasSuccessful)
 {
 	if(SteamMultiplayerSubsystem == nullptr)
 	{
@@ -119,7 +119,7 @@ void USessionMenu::OnFindSessions(const TArray<FOnlineSessionSearchResult>& Sess
 	}
 }
 
-void USessionMenu::OnJoinSession(EOnJoinSessionCompleteResult::Type Result)
+void USteamMainMenu::OnJoinSession(EOnJoinSessionCompleteResult::Type Result)
 {
 	IOnlineSubsystem* Subsystem = IOnlineSubsystem::Get();
 	if(Subsystem)
@@ -144,15 +144,15 @@ void USessionMenu::OnJoinSession(EOnJoinSessionCompleteResult::Type Result)
 	}
 }
 
-void USessionMenu::OnDestroySession(bool bWasSuccessful)
+void USteamMainMenu::OnDestroySession(bool bWasSuccessful)
 {
 }
 
-void USessionMenu::OnStartSession(bool bWasSuccessful)
+void USteamMainMenu::OnStartSession(bool bWasSuccessful)
 {
 }
 
-void USessionMenu::HostButtonClicked()
+void USteamMainMenu::HostButtonClicked()
 {
 	HostButton->SetIsEnabled(false);
 	if(SteamMultiplayerSubsystem)
@@ -161,7 +161,7 @@ void USessionMenu::HostButtonClicked()
 	}
 }
 
-void USessionMenu::JoinButtonClicked()
+void USteamMainMenu::JoinButtonClicked()
 {
 	JoinButton->SetIsEnabled(false);
 	if(SteamMultiplayerSubsystem)
@@ -170,7 +170,7 @@ void USessionMenu::JoinButtonClicked()
 	}
 }
 
-void USessionMenu::MenuTearDown()
+void USteamMainMenu::MenuTearDown()
 {
 	RemoveFromParent();
 	UWorld* World = GetWorld();

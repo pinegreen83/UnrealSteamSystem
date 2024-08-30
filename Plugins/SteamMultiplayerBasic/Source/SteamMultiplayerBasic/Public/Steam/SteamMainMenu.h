@@ -5,13 +5,13 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Interfaces/OnlineSessionInterface.h"
-#include "SessionMenu.generated.h"
+#include "SteamMainMenu.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class STEAMMULTIPLAYERBASIC_API USessionMenu : public UUserWidget
+class STEAMMULTIPLAYERBASIC_API USteamMainMenu : public UUserWidget
 {
 	GENERATED_BODY()
 
