@@ -38,12 +38,10 @@ private:
 	void OnSinglePlayerButtonClicked();
 	UFUNCTION()
 	void OnMultiPlayerButtonClicked();
-
 	
 	/*
 	 * 각자의 다른 기능을 하는 위젯들
 	 */
-
 	UPROPERTY(meta = (BindWidget))
 	class ULocalMultiplayerMenu* MultiplayerMenu;
 	

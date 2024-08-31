@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "LocalMultiplayerMenu.generated.h"
+#include "SteamMultiplayerMenu.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class STEAMMULTIPLAYERBASIC_API ULocalMultiplayerMenu : public UUserWidget
+class STEAMMULTIPLAYERBASIC_API USteamMultiplayerMenu : public UUserWidget
 {
 	GENERATED_BODY()
 public:
@@ -21,7 +21,7 @@ public:
 	void ToggleMenuElements(ESlateVisibility NewVisibility);
 	
 	// 메인 메뉴의 포인터를 설정하는 함수
-	void InitializeMainMenu(TObjectPtr<class ULocalMainMenu> InMainMenu);
+	void InitializeMainMenu(TObjectPtr<class USteamMainMenu> InMainMenu);
 
 protected:
 	virtual void NativeConstruct() override;
@@ -30,13 +30,13 @@ private:
 	/*
 	 * 다른 위젯들에 대한 정보
 	 */
-	TObjectPtr<ULocalMainMenu> MainMenuWidget;
+	TObjectPtr<USteamMainMenu> MainMenuWidget;
 	
 	UPROPERTY(meta = (BindWidget))
-	class ULocalCreateSessionWidget* CreateSessionWidget;
+	class USteamCreateSessionWidget* CreateSessionWidget;
 
 	UPROPERTY(meta = (BindWidget))
-	class ULocalFindSessionsWidget* FindSessionsWidget;
+	class USteamFindSessionsWidget* FindSessionsWidget;
 	
 	/*
 	 * Multiplayer Menu에 사용될 위젯들
@@ -66,8 +66,5 @@ private:
 	
 	UFUNCTION()
 	void OnOpenFindSessionsPanelButtonClicked();
-	
-	void FindSessions();
-	void OnFindSessionsComplete(bool bWasSuccessful);
 	
 };

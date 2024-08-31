@@ -6,7 +6,7 @@
 
 ALocalMenuGameModeBase::ALocalMenuGameModeBase()
 {
-	static ConstructorHelpers::FClassFinder<ULocalMainMenu> MainMenuWidgetWBPClass(TEXT("/SteamMultiplayerBasic/UI/WBP_LocalMainMenu.WBP_LocalMainMenu_C"));
+	static ConstructorHelpers::FClassFinder<ULocalMainMenu> MainMenuWidgetWBPClass(TEXT("/SteamMultiplayerBasic/UI/Local/WBP_LocalMainMenu.WBP_LocalMainMenu_C"));
 	if(MainMenuWidgetWBPClass.Class)
 	{
 		MainMenuWidgetClass = MainMenuWidgetWBPClass.Class;

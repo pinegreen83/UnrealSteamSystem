@@ -27,17 +27,6 @@ void ULocalMainMenu::NativeConstruct()
 void ULocalMainMenu::OnSinglePlayerButtonClicked()
 {
 	ToggleMenuElements(ESlateVisibility::Hidden);
-	
-	UE_LOG(LogTemp, Log, TEXT("Single Player Button Clicked"));
-	if(GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(
-			-1,
-			15.f,
-			FColor::Emerald,
-			FString(TEXT("Single Player Button Clicked"))
-			);
-	}
 
 	FString LevelName = "SinglePlayLevel";
 	UGameplayStatics::OpenLevel(GetWorld(), FName(*LevelName));
@@ -46,22 +35,12 @@ void ULocalMainMenu::OnSinglePlayerButtonClicked()
 void ULocalMainMenu::OnMultiPlayerButtonClicked()
 {
 	ToggleMenuElements(ESlateVisibility::Hidden);
-	
-	UE_LOG(LogTemp, Log, TEXT("Multi Player Button Clicked"));
-	if(GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(
-			-1,
-			15.f,
-			FColor::Emerald,
-			FString(TEXT("Multi Player Button Clicked"))
-			);
-	}
 
 	if(MultiplayerMenu)
 	{
 		MultiplayerMenu->InitializeMainMenu(this);
 		MultiplayerMenu->SetVisibility(ESlateVisibility::Visible);
+		MultiplayerMenu->InitializeWidget();
 	}
 }
 

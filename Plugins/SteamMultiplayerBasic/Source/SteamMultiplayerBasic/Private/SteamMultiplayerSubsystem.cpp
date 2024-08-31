@@ -4,6 +4,8 @@
 #include "SteamMultiplayerSubsystem.h"
 #include "OnlineSubsystem.h"
 #include "OnlineSessionSettings.h"
+#include "SessionInfo.h"
+#include "Interfaces/OnlineIdentityInterface.h"
 #include "Online/OnlineSessionNames.h"
 
 USteamMultiplayerSubsystem::USteamMultiplayerSubsystem():
@@ -20,36 +22,35 @@ USteamMultiplayerSubsystem::USteamMultiplayerSubsystem():
 	}
 }
 
-void USteamMultiplayerSubsystem::CreateSession(int32 NumPublicConnections, FString MatchType)
+void USteamMultiplayerSubsystem::CreateSession(const FSessionInfo& SessionInfo)
 {
 	if(!SessionInterface.IsValid())
 	{
 		return;
 	}
 
-	auto ExistingSession = SessionInterface->GetNamedSession(NAME_GameSession);
-	if(ExistingSession != nullptr)
-	{
-		bCreateSessionOnDestroy = true;
-		LastNumPublicConnections = NumPublicConnections;
-		LastMatchType = MatchType;
-
-		DestroySession();
-	}
-
 	// delegate를 delegate handle에 저장해서 추후에 delegate list에서 삭제가 가능하도록 만듦.
 	CreateSessionCompleteDelegateHandle = SessionInterface->AddOnCreateSessionCompleteDelegate_Handle(CreateSessionCompleteDelegate);
 
-	LastSessionSettings = MakeShareable(new FOnlineSessionSettings());
-	LastSessionSettings->bIsLANMatch = IOnlineSubsystem::Get()->GetSubsystemName() == "Null" ? true : false;
-	LastSessionSettings->NumPublicConnections = NumPublicConnections;
-	LastSessionSettings->bAllowJoinInProgress = true;
-	LastSessionSettings->bAllowJoinViaPresence = true;
-	LastSessionSettings->bShouldAdvertise = true;
-	LastSessionSettings->bUsesPresence = true;
-	LastSessionSettings->bUseLobbiesIfAvailable = true;
-	LastSessionSettings->Set(FName("MatchType"), MatchType, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
-	LastSessionSettings->BuildUniqueId = 1;
+	IOnlineSubsystem* OnlineSubsystem = IOnlineSubsystem::Get();
+	if(OnlineSubsystem)
+	{
+		LastSessionSettings = MakeShareable(new FOnlineSessionSettings());
+		LastSessionSettings->bIsLANMatch = IOnlineSubsystem::Get()->GetSubsystemName() == "Null" ? true : false;
+		LastSessionSettings->NumPublicConnections = SessionInfo.MaxPlayers;
+		LastSessionSettings->bAllowJoinInProgress = true;
+		LastSessionSettings->bAllowJoinViaPresence = true;
+		LastSessionSettings->bShouldAdvertise = !SessionInfo.bIsPrivate;
+		LastSessionSettings->bUsesPresence = true;
+		LastSessionSettings->bAllowJoinInProgress = false;
+		LastSessionSettings->bUseLobbiesIfAvailable = true;
+		LastSessionSettings->BuildUniqueId = 1;
+
+		// 커스텀 세션 정보 저장
+		LastSessionSettings->Set(FName("DisplaySessionName"), SessionInfo.DisplaySessionName, EOnlineDataAdvertisementType::ViaOnlineService);
+		LastSessionSettings->Set(FName("CreatorName"), SessionInfo.CreatorName, EOnlineDataAdvertisementType::ViaOnlineService);
+		LastSessionSettings->Set(SETTING_MAPNAME, SessionInfo.SelectedMap, EOnlineDataAdvertisementType::ViaOnlineService);
+	}
 	
 	const ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
 	if(!SessionInterface->CreateSession(*LocalPlayer->GetPreferredUniqueNetId(), NAME_GameSession, *LastSessionSettings))
@@ -57,7 +58,7 @@ void USteamMultiplayerSubsystem::CreateSession(int32 NumPublicConnections, FStri
 		SessionInterface->ClearOnCreateSessionCompleteDelegate_Handle(CreateSessionCompleteDelegateHandle);
 
 		// 커스텀 delegate를 사용해서 broadcast
-		SteamMultiplayerOnCreateSessionComplete.Broadcast(false);
+		SteamMultiplayerOnCreateSessionComplete.Broadcast("",false);
 	}
 }
 
@@ -89,18 +90,20 @@ void USteamMultiplayerSubsystem::JoinSession(const FOnlineSessionSearchResult& S
 {
 	if(!SessionInterface.IsValid())
 	{
-		SteamMultiplayerOnJoinSessionComplete.Broadcast(EOnJoinSessionCompleteResult::UnknownError);
+		SteamMultiplayerOnJoinSessionComplete.Broadcast("", EOnJoinSessionCompleteResult::UnknownError);
 		return;
 	}
 
 	JoinSessionCompleteDelegateHandle = SessionInterface->AddOnJoinSessionCompleteDelegate_Handle(JoinSessionCompleteDelegate);
 
+	FString JoinSession;
+	SessionResult.Session.SessionSettings.Get(FName("SessionName"), JoinSession);
 	const ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
-	if(!SessionInterface->JoinSession(*LocalPlayer->GetPreferredUniqueNetId(), NAME_GameSession, SessionResult))
+	if(!SessionInterface->JoinSession(*LocalPlayer->GetPreferredUniqueNetId(), *JoinSession, SessionResult))
 	{
 		SessionInterface->ClearOnJoinSessionCompleteDelegate_Handle(JoinSessionCompleteDelegateHandle);
 
-		SteamMultiplayerOnJoinSessionComplete.Broadcast(EOnJoinSessionCompleteResult::UnknownError);
+		SteamMultiplayerOnJoinSessionComplete.Broadcast("", EOnJoinSessionCompleteResult::UnknownError);
 	}
 }
 
@@ -132,7 +135,7 @@ void USteamMultiplayerSubsystem::OnCreateSessionComplete(FName SessionName, bool
 		SessionInterface->ClearOnCreateSessionCompleteDelegate_Handle(CreateSessionCompleteDelegateHandle);
 	}
 
-	SteamMultiplayerOnCreateSessionComplete.Broadcast(bWasSuccessful);
+	SteamMultiplayerOnCreateSessionComplete.Broadcast(SessionName, bWasSuccessful);
 }
 
 void USteamMultiplayerSubsystem::OnFindSessionsComplete(bool bWasSuccessful)
@@ -158,7 +161,7 @@ void USteamMultiplayerSubsystem::OnJoinSessionComplete(FName SessionName, EOnJoi
 		SessionInterface->ClearOnJoinSessionCompleteDelegate_Handle(JoinSessionCompleteDelegateHandle);
 	}
 
-	SteamMultiplayerOnJoinSessionComplete.Broadcast(Result);
+	SteamMultiplayerOnJoinSessionComplete.Broadcast(SessionName, Result);
 }
 
 auto USteamMultiplayerSubsystem::OnDestroySessionComplete(FName SessionName, bool bWasSuccessful) -> void
@@ -170,7 +173,6 @@ auto USteamMultiplayerSubsystem::OnDestroySessionComplete(FName SessionName, boo
 	if(bWasSuccessful && bCreateSessionOnDestroy)
 	{
 		bCreateSessionOnDestroy = false;
-		CreateSession(LastNumPublicConnections, LastMatchType);
 	}
 	SteamMultiplayerOnDestroySessionComplete.Broadcast(bWasSuccessful);
 }

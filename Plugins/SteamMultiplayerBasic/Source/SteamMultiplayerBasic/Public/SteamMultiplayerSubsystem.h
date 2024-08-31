@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SessionInfo.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "Interfaces/OnlineSessionInterface.h"
 
@@ -11,9 +12,9 @@
 /**
  * 메뉴 클래스에서 부를 콜백함수와 바인드된 delegate
  */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSteamMultiplayerOnCreateSessionComplete, bool, bWasSuccessful);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSteamMultiplayerOnCreateSessionComplete, const FName&, SessionName, bool, bWasSuccessful);
 DECLARE_MULTICAST_DELEGATE_TwoParams(FSteamMultiplayerOnFindSessionsComplete, const TArray<FOnlineSessionSearchResult>& SessionResults, bool bWasSuccessful);
-DECLARE_MULTICAST_DELEGATE_OneParam(FSteamMultiplayerOnJoinSessionComplete, EOnJoinSessionCompleteResult::Type Result);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FSteamMultiplayerOnJoinSessionComplete, FName SessionName, EOnJoinSessionCompleteResult::Type Result);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSteamMultiplayerOnDestroySessionComplete, bool, bWasSuccessful);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSteamMultiplayerOnStartSessionComplete, bool, bWasSuccessful);
 
@@ -30,9 +31,9 @@ public:
 
 	// 세션 기능을 다루기 위한 함수들.
 	/**
-	 * CreateSession : NumPublicConnections = 몇 명의 플레이어들이 세션에 참여할 수 있는지, MatchType : 세션을 만들기 위해 사용.
+	 * CreateSession : SessionInfo = 세션 생성에 필요한 정보를 담을 수 있는 구조체.
 	 */
-	void CreateSession(int32 NumPublicConnections, FString MatchType);
+	void CreateSession(const FSessionInfo& SessionInfo);
 	/**
 	 * FindSessions : MaxSearchResults = 한 번에 몇 개의 세션을 찾을 것인지를 나타내는 함수
 	 */

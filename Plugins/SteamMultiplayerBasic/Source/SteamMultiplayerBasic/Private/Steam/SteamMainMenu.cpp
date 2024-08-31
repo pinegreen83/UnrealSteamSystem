@@ -3,186 +3,51 @@
 
 #include "Steam/SteamMainMenu.h"
 #include "Components/Button.h"
-#include "SteamMultiplayerSubsystem.h"
-#include "OnlineSessionSettings.h"
-#include "OnlineSubsystem.h"
+#include "Components/TextBlock.h"
+#include "Kismet/GameplayStatics.h"
+#include "Steam/SteamMultiplayerMenu.h"
 
-void USteamMainMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch, FString LobbyPath)
+void USteamMainMenu::NativeConstruct()
 {
-	PathToLobby = FString::Printf(TEXT("%s?listen"), *LobbyPath);
-	NumPublicConnections = NumberOfPublicConnections;
-	MatchType = TypeOfMatch;
-	AddToViewport();
-	SetVisibility(ESlateVisibility::Visible);
-	SetIsFocusable(true);
-
-	UWorld* World = GetWorld();
-	if(World)
-	{
-		APlayerController* PlayerController = World->GetFirstPlayerController();
-		if(PlayerController)
-		{
-			FInputModeUIOnly InputModeData;
-			InputModeData.SetWidgetToFocus(TakeWidget());
-			InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-			PlayerController->SetInputMode(InputModeData);
-			PlayerController->SetShowMouseCursor(true);
-		}
-	}
-
-	UGameInstance* GameInstance = GetGameInstance();
-	if(GameInstance)
-	{
-		SteamMultiplayerSubsystem = GameInstance->GetSubsystem<USteamMultiplayerSubsystem>();
-	}
-
-	if(SteamMultiplayerSubsystem)
-	{
-		SteamMultiplayerSubsystem->SteamMultiplayerOnCreateSessionComplete.AddDynamic(this, &ThisClass::OnCreateSession);
-		SteamMultiplayerSubsystem->SteamMultiplayerOnFindSessionsComplete.AddUObject(this, &ThisClass::OnFindSessions);
-		SteamMultiplayerSubsystem->SteamMultiplayerOnJoinSessionComplete.AddUObject(this, &ThisClass::OnJoinSession);
-		SteamMultiplayerSubsystem->SteamMultiplayerOnDestroySessionComplete.AddDynamic(this, &ThisClass::OnDestroySession);
-		SteamMultiplayerSubsystem->SteamMultiplayerOnStartSessionComplete.AddDynamic(this, &ThisClass::OnStartSession);
-	}
-}
-
-bool USteamMainMenu::Initialize()
-{
-	if(!Super::Initialize())
-	{
-		return false;
-	}
-
-	if(HostButton)
-	{
-		HostButton->OnClicked.AddDynamic(this, &ThisClass::HostButtonClicked);
-	}
-	if(JoinButton)
-	{
-		JoinButton->OnClicked.AddDynamic(this, &ThisClass::JoinButtonClicked);
-	}
+	Super::NativeConstruct();
 	
-	return true;
-}
-
-void USteamMainMenu::NativeDestruct()
-{
-	MenuTearDown();
-	Super::NativeDestruct();
-}
-
-void USteamMainMenu::OnCreateSession(bool bWasSuccessful)
-{
-	if(bWasSuccessful)
+	MultiplayerMenu->SetVisibility(ESlateVisibility::Hidden);
+	
+	if(SinglePlayerButton)
 	{
-		UWorld* World = GetWorld();
-		if(World)
-		{
-			World->ServerTravel(PathToLobby);
-		}
+		SinglePlayerButton->OnClicked.AddDynamic(this, &USteamMainMenu::OnSinglePlayerButtonClicked);
 	}
-	else
+
+	if(MultiplayerButton)
 	{
-		// if(GEngine)
-		// {
-		// 	GEngine->AddOnScreenDebugMessage(
-		// 		-1,
-		// 		15.f,
-		// 		FColor::Yellow,
-		// 		FString(TEXT("Failed to create session"))
-		// 		);
-		// }
-		HostButton->SetIsEnabled(true);
+		MultiplayerButton->OnClicked.AddDynamic(this, &USteamMainMenu::OnMultiPlayerButtonClicked);
 	}
 }
 
-void USteamMainMenu::OnFindSessions(const TArray<FOnlineSessionSearchResult>& SessionResults, bool bWasSuccessful)
+void USteamMainMenu::OnSinglePlayerButtonClicked()
 {
-	if(SteamMultiplayerSubsystem == nullptr)
-	{
-		return;
-	}
+	ToggleMenuElements(ESlateVisibility::Hidden);
 
-	for(auto Result : SessionResults)
+	FString LevelName = "SinglePlayLevel";
+	UGameplayStatics::OpenLevel(GetWorld(), FName(*LevelName));
+}
+
+void USteamMainMenu::OnMultiPlayerButtonClicked()
+{
+	ToggleMenuElements(ESlateVisibility::Hidden);
+
+	if(MultiplayerMenu)
 	{
-		FString SettingsValue;
-		Result.Session.SessionSettings.Get(FName("MatchType"), SettingsValue);
-		if(SettingsValue == MatchType)
-		{
-			SteamMultiplayerSubsystem->JoinSession(Result);
-			return;
-		}
-	}
-	if(!bWasSuccessful || SessionResults.Num() == 0)
-	{
-		JoinButton->SetIsEnabled(true);
+		MultiplayerMenu->InitializeMainMenu(this);
+		MultiplayerMenu->SetVisibility(ESlateVisibility::Visible);
+		MultiplayerMenu->InitializeWidget();
 	}
 }
 
-void USteamMainMenu::OnJoinSession(EOnJoinSessionCompleteResult::Type Result)
+void USteamMainMenu::ToggleMenuElements(ESlateVisibility NewVisibility)
 {
-	IOnlineSubsystem* Subsystem = IOnlineSubsystem::Get();
-	if(Subsystem)
-	{
-		IOnlineSessionPtr SessionInterface = Subsystem->GetSessionInterface();
-		if(SessionInterface.IsValid())
-		{
-			FString Address;
-			SessionInterface->GetResolvedConnectString(NAME_GameSession, Address);
-
-			APlayerController* PlayerController = GetGameInstance()->GetFirstLocalPlayerController();
-			if(PlayerController)
-			{
-				PlayerController->ClientTravel(Address, TRAVEL_Absolute);
-			}
-		}
-	}
-
-	if(Result != EOnJoinSessionCompleteResult::Success)
-	{
-		JoinButton->SetIsEnabled(true);
-	}
-}
-
-void USteamMainMenu::OnDestroySession(bool bWasSuccessful)
-{
-}
-
-void USteamMainMenu::OnStartSession(bool bWasSuccessful)
-{
-}
-
-void USteamMainMenu::HostButtonClicked()
-{
-	HostButton->SetIsEnabled(false);
-	if(SteamMultiplayerSubsystem)
-	{
-		SteamMultiplayerSubsystem->CreateSession(4, FString("pinegreen"));
-	}
-}
-
-void USteamMainMenu::JoinButtonClicked()
-{
-	JoinButton->SetIsEnabled(false);
-	if(SteamMultiplayerSubsystem)
-	{
-		SteamMultiplayerSubsystem->FindSessions(10000);
-	}
-}
-
-void USteamMainMenu::MenuTearDown()
-{
-	RemoveFromParent();
-	UWorld* World = GetWorld();
-	if(World)
-	{
-		APlayerController* PlayerController = World->GetFirstPlayerController();
-		if(PlayerController)
-		{
-			FInputModeGameAndUI InputModeData;
-			InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::LockInFullscreen);
-			PlayerController->SetInputMode(InputModeData);
-			PlayerController->SetShowMouseCursor(true);
-		}
-	}
+	// 메인 메뉴에 있는 위젯들 숨기기.
+	GameTitle->SetVisibility(NewVisibility);
+	SinglePlayerButton->SetVisibility(NewVisibility);
+	MultiplayerButton->SetVisibility(NewVisibility);
 }
