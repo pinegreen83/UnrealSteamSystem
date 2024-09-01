@@ -34,10 +34,15 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	UButton* MultiplayerButton;
 
+	UPROPERTY(meta = (BindWidget))
+	UButton* QuitGameButton;
+	
 	UFUNCTION()
 	void OnSinglePlayerButtonClicked();
 	UFUNCTION()
 	void OnMultiPlayerButtonClicked();
+	UFUNCTION()
+	void OnQuitGameButtonClicked();
 	
 	/*
 	 * 각자의 다른 기능을 하는 위젯들

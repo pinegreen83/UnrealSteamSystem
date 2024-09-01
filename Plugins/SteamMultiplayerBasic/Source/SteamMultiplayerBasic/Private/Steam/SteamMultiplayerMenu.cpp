@@ -37,7 +37,7 @@ void USteamMultiplayerMenu::OnReturnToMainButtonClicked()
 
 	if (MainMenuWidget)
 	{
-		// MainMenuWidget->ToggleMenuElements(ESlateVisibility::Visible);
+		MainMenuWidget->ToggleMenuElements(ESlateVisibility::Visible);
 	}
 	else
 	{

@@ -30,7 +30,8 @@ public class SteamMultiplayerBasic : ModuleRules
 				"OnlineSubsystemSteam",
 				"UMG",
 				"Slate",
-				"SlateCore"
+				"SlateCore", 
+				"EnhancedInput"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);

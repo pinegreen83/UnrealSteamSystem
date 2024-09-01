@@ -78,6 +78,22 @@ void USteamSessionInfoWidget::SetSessionInfo(const FOnlineSessionSearchResult& S
 						SearchResult.Session.NumOpenPublicConnections)
 			);
 	}
+
+	// 방을 생성한 플레이어의 이름
+	FString RoomHostName;
+	if(SearchResult.Session.SessionSettings.Get(FName("CreatorName"), RoomHostName))
+	{
+		RoomHostNameText->SetText(FText::FromString(RoomHostName));
+		UE_LOG(LogTemp, Log, TEXT("CreatorName : %s"), *RoomHostName);
+		if(GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(
+				-1,
+				15.f,
+				FColor::Cyan,
+				FString::Printf(TEXT("CreatorName : %s"), *RoomHostName));
+		}
+	}
 	
 	// 현재 방에 있는 플레이어의 수 / 최대 수용가능한 플레이어 수
 	// 최대 플레이어 수

@@ -22,6 +22,11 @@ void ULocalMainMenu::NativeConstruct()
 	{
 		MultiplayerButton->OnClicked.AddDynamic(this, &ULocalMainMenu::OnMultiPlayerButtonClicked);
 	}
+	
+	if(QuitGameButton)
+	{
+		QuitGameButton->OnClicked.AddDynamic(this, &ULocalMainMenu::OnQuitGameButtonClicked);
+	}
 }
 
 void ULocalMainMenu::OnSinglePlayerButtonClicked()
@@ -41,6 +46,19 @@ void ULocalMainMenu::OnMultiPlayerButtonClicked()
 		MultiplayerMenu->InitializeMainMenu(this);
 		MultiplayerMenu->SetVisibility(ESlateVisibility::Visible);
 		MultiplayerMenu->InitializeWidget();
+	}
+}
+
+void ULocalMainMenu::OnQuitGameButtonClicked()
+{
+	// 에디터 환경인지 확인 후, 에디터에서는 종료하지 않음
+	if (!GEngine->IsEditor())
+	{
+		FGenericPlatformMisc::RequestExit(false);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("게임 종료는 에디터에서는 실행되지 않습니다."));
 	}
 }
 

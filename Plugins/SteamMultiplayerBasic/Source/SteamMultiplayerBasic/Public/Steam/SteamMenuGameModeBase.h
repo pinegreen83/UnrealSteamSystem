@@ -14,4 +14,16 @@ class STEAMMULTIPLAYERBASIC_API ASteamMenuGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 	
+public:
+	ASteamMenuGameModeBase();
+	
+protected:
+	virtual void BeginPlay() override;
+
+private:
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<class USteamMainMenu> MainMenuWidgetClass;
+
+	UPROPERTY()
+	USteamMainMenu* MainMenuWidget;
 };

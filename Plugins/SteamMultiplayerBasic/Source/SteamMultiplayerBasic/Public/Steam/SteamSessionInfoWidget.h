@@ -29,6 +29,9 @@ private:
 	UTextBlock* SelectedMapText;
 	
 	UPROPERTY(meta = (BindWidget))
+	UTextBlock* RoomHostNameText;
+	
+	UPROPERTY(meta = (BindWidget))
 	UTextBlock* PlayerInRoomText;
 
 	UPROPERTY(meta = (BindWidget))

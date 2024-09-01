@@ -5,7 +5,6 @@
 #include "OnlineSubsystem.h"
 #include "OnlineSessionSettings.h"
 #include "SessionInfo.h"
-#include "Interfaces/OnlineIdentityInterface.h"
 #include "Online/OnlineSessionNames.h"
 
 USteamMultiplayerSubsystem::USteamMultiplayerSubsystem():
@@ -28,17 +27,16 @@ void USteamMultiplayerSubsystem::CreateSession(const FSessionInfo& SessionInfo)
 	{
 		return;
 	}
-
+	
 	// delegate를 delegate handle에 저장해서 추후에 delegate list에서 삭제가 가능하도록 만듦.
 	CreateSessionCompleteDelegateHandle = SessionInterface->AddOnCreateSessionCompleteDelegate_Handle(CreateSessionCompleteDelegate);
-
+	
 	IOnlineSubsystem* OnlineSubsystem = IOnlineSubsystem::Get();
 	if(OnlineSubsystem)
 	{
 		LastSessionSettings = MakeShareable(new FOnlineSessionSettings());
 		LastSessionSettings->bIsLANMatch = IOnlineSubsystem::Get()->GetSubsystemName() == "Null" ? true : false;
 		LastSessionSettings->NumPublicConnections = SessionInfo.MaxPlayers;
-		LastSessionSettings->bAllowJoinInProgress = true;
 		LastSessionSettings->bAllowJoinViaPresence = true;
 		LastSessionSettings->bShouldAdvertise = !SessionInfo.bIsPrivate;
 		LastSessionSettings->bUsesPresence = true;
@@ -53,12 +51,12 @@ void USteamMultiplayerSubsystem::CreateSession(const FSessionInfo& SessionInfo)
 	}
 	
 	const ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
-	if(!SessionInterface->CreateSession(*LocalPlayer->GetPreferredUniqueNetId(), NAME_GameSession, *LastSessionSettings))
+	if(!SessionInterface->CreateSession(*LocalPlayer->GetPreferredUniqueNetId(), FName(SessionInfo.SessionName), *LastSessionSettings))
 	{
 		SessionInterface->ClearOnCreateSessionCompleteDelegate_Handle(CreateSessionCompleteDelegateHandle);
-
+	
 		// 커스텀 delegate를 사용해서 broadcast
-		SteamMultiplayerOnCreateSessionComplete.Broadcast("",false);
+		SteamMultiplayerOnCreateSessionComplete.Broadcast("", false);
 	}
 }
 

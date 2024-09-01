@@ -27,8 +27,8 @@ public:
 	FString SelectedMap;
 
 	UPROPERTY(BlueprintReadWrite)
-	int32 MaxPlayers;
+	int32 MaxPlayers = 1;
 
 	UPROPERTY(BlueprintReadWrite)
-	bool bIsPrivate;
+	bool bIsPrivate = false;
 };

@@ -50,6 +50,9 @@ private:
 
 	TObjectPtr<USteamMultiplayerMenu> MultiplayerMenu;
 
+	UPROPERTY()
+	FName SavedMapName;
+
 	/*
 	 * 세션 생성에 필요한 요소들
 	 */

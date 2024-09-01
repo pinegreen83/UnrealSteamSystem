@@ -37,6 +37,7 @@ void USteamCreateSessionWidget::NativeConstruct()
 	{
 		SteamMultiplayerSubsystem->SteamMultiplayerOnCreateSessionComplete.AddDynamic(this, &USteamCreateSessionWidget::OnCreateSessionComplete);
 	}
+
 }
 
 void USteamCreateSessionWidget::OnCreateSessionClicked()
@@ -57,15 +58,6 @@ void USteamCreateSessionWidget::OnCreateSessionClicked()
 	SessionInfo.SessionName = SessionNameTextBox->GetText().ToString();
 	SessionInfo.DisplaySessionName = SessionInfo.SessionName;
 	
-	if(GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(
-			-1,
-			15.f,
-			FColor::Cyan,
-			FString::Printf(TEXT("Session Name: %d"), SessionInfo.MaxPlayers));
-	}
-	
 	IOnlineSubsystem* OnlineSubsystem = IOnlineSubsystem::Get();
 	if(OnlineSubsystem)
 	{
@@ -79,6 +71,7 @@ void USteamCreateSessionWidget::OnCreateSessionClicked()
 		}
 	}
 
+	SavedMapName = FName(*SessionInfo.SelectedMap);
 	// 세션 생성
 	SteamMultiplayerSubsystem->CreateSession(SessionInfo);
 }
@@ -95,7 +88,7 @@ void USteamCreateSessionWidget::OnReturnToMainButtonClicked()
 
 void USteamCreateSessionWidget::OnCreateSessionComplete(const FName& SessionName, bool bWasSuccessful)
 {
-		if(bWasSuccessful)
+	if(bWasSuccessful)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Session created successfully."));
 		if(GEngine)
@@ -107,8 +100,10 @@ void USteamCreateSessionWidget::OnCreateSessionComplete(const FName& SessionName
 				FString(TEXT("Session created successfully."))
 				);
 		}
-		FString LevelName = "SinglePlayLevel";
-		UGameplayStatics::OpenLevel(GetWorld(), FName(*LevelName), true, "listen");
+		if(SavedMapName != NAME_None)
+		{
+			UGameplayStatics::OpenLevel(GetWorld(), SavedMapName, true, "listen");
+		}
 	}
 	else
 	{
