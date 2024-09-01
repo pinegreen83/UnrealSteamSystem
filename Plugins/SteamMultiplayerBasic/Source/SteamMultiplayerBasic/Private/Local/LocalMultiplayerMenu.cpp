@@ -10,6 +10,7 @@
 #include "Local/LocalCreateSessionWidget.h"
 #include "Local/LocalFindSessionsWidget.h"
 #include "Local/LocalMainMenu.h"
+#include "Online/OnlineSessionNames.h"
 
 class IOnlineSubsystem;
 
@@ -91,7 +92,9 @@ void ULocalMultiplayerMenu::FindSessions()
 		{
 			SessionSearch = MakeShareable(new FOnlineSessionSearch());
 			SessionSearch->bIsLanQuery = true;
-			SessionSearch->MaxSearchResults = 10;
+			SessionSearch->MaxSearchResults = 100;
+			SessionSearch->QuerySettings.Set(SEARCH_PRESENCE, true, EOnlineComparisonOp::Equals);
+
 
 			Sessions->OnFindSessionsCompleteDelegates.AddUObject(this, &ULocalMultiplayerMenu::OnFindSessionsComplete);
 			Sessions->FindSessions(0, SessionSearch.ToSharedRef());
@@ -101,18 +104,19 @@ void ULocalMultiplayerMenu::FindSessions()
 
 void ULocalMultiplayerMenu::OnFindSessionsComplete(bool bWasSuccessful)
 {
+	UE_LOG(LogTemp, Log, TEXT("Found %d sessions."), SessionSearch->SearchResults.Num());
+	if(GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(
+			-1,
+			15.f,
+			FColor::Cyan,
+			FString::Printf(TEXT("Found %d sessions."), SessionSearch->SearchResults.Num())
+			);
+	}
+	
 	if(bWasSuccessful && SessionSearch->SearchResults.Num() > 0)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Found %d sessions."), SessionSearch->SearchResults.Num());
-		if(GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(
-				-1,
-				15.f,
-				FColor::Cyan,
-				FString::Printf(TEXT("Found %d sessions."), SessionSearch->SearchResults.Num())
-				);
-		}
 		if(FindSessionsWidget)
 		{
 			FindSessionsWidget->GetSessionSearchResult(SessionSearch);

@@ -75,3 +75,5 @@ DerivedDataCache/*
 
 # MacOs
 .DS_Store
+
+Content/

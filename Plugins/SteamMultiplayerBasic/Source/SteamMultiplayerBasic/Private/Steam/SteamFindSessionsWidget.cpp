@@ -41,12 +41,28 @@ void USteamFindSessionsWidget::OnReturnToMainButtonClicked()
 	}
 }
 
+void USteamFindSessionsWidget::StartFindSessions()
+{
+	SteamMultiplayerSubsystem->FindSessions(1000);
+}
+
 void USteamFindSessionsWidget::OnFindSessionsComplete(const TArray<FOnlineSessionSearchResult>& SessionResults,
 	bool bWasSuccessful)
 {
 	if(SteamMultiplayerSubsystem == nullptr)
 	{
 		return;
+	}
+	
+	UE_LOG(LogTemp, Log, TEXT("Found %d sessions."), SessionResults.Num());
+	if(GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(
+			-1,
+			15.f,
+			FColor::Cyan,
+			FString::Printf(TEXT("Found %d sessions."), SessionResults.Num())
+			);
 	}
 	
 	if(bWasSuccessful && SessionResults.Num() > 0)
@@ -122,7 +138,3 @@ void USteamFindSessionsWidget::InitializeMultiplayerMenu(TObjectPtr<class USteam
 	MultiplayerMenu = InMultiplayerMenu;
 }
 
-void USteamFindSessionsWidget::StartFindSessions()
-{
-	SteamMultiplayerSubsystem->FindSessions(1000);
-}
